@@ -1,0 +1,142 @@
+// ------------------- Define some constants for convenience -----------------
+#define YAW      0
+#define STOPPED  0
+#define STARTING 1
+#define STARTED  2
+float measures[1] = {0};
+
+// ------------- Global variables used for PID controller --------------------
+float pid_set_points[1] = {30}; // Yaw, Pitch, Roll
+// Errors
+float errors[3];                     // Measured error (compared to instructions) : [Yaw]
+float delta_error[1]      = {0}; // Error delta   : Yaw
+float error_sum[1]      = {0}; // Error sum (used for integral component) : [Yaw]
+float previous_error[1] = {0}; // Last error (used for derivative component) : [Yaw]
+// PID coefficients
+float Kp[3] = {4.0};    // P coefficients  : Yaw
+float Ki[1] = {0.02}; // I coefficients  : Yaw
+float Kd[3] = {10};        // D coefficients  : Yaw
+
+
+// Thruster RPM Constants
+const int THRUSTER_RPM = 512;
+
+
+
+void setup() {
+/* Initialize loop_timer (can just use delay but that would delay the code and not the process in b/w)
+    loop_timer = micros(100);
+
+    //need to include the code for orientation sensor starting around here
+    the one which gives the result in the form of event.orientation.x as the YAW values 
+
+
+
+    // Set pin modes
+    pinMode(joystick_pin, INPUT);
+    pinMode(thruster_1_pin, OUTPUT);
+    pinMode(thruster_2_pin, OUTPUT);
+
+    }
+*/
+ // Main program loop
+ 
+void loop() {
+
+    // 1. First, read angle values from BNO055
+    //code to extract " event.orientation.x " and use it latter on also change the event.orientation.x as [YAW] as it used later on everywhere
+    
+    // 3. Calculate set points of PID controller
+    calculateSetPoints();
+
+    // 4. Calculate errors comparing angular motions to set points
+    calculateErrors();
+
+    // 5. Calculate calculate_pid_output
+    calculate_pid_output();
+ 
+     // 6. Apply motors speed
+    controlThrusters();
+   
+    // Print Thruster RPMs
+    std::cout << "Thruster 1 RPM: " << thruster1_rpm << std::endl;
+    std::cout << "Thruster 2 RPM: " << thruster2_rpm << std::endl;
+}
+void calculateSetPoints() {
+  //  pid_set_points[YAW]   = here include code for taking data in from the joystick for a mapped range of +ve and -ve vlaues to a fixed amount of degrees (or start using a multimeter to give specific value as input as told by naresh makerspace)
+}
+
+/*/ double get_joystick_value() {
+    // Read the value of the joystick sensor connected to pin 22
+    int joystick_sensor_value = analogRead(joystick_pin);
+
+    // Map the joystick sensor value to the range -30 to 30
+    double joystick_value = map(joystick_sensor_value, 0, 1023, -30, 30);
+
+    return joystick_value;
+/**
+ * Calculate errors used by PID controller
+ */
+void calculateErrors() {
+    // Calculate current error
+    errors[YAW]   = [YAW]   - pid_set_points[YAW];
+
+    // Calculate sum of errors : Integral coefficients
+    error_sum[YAW]   += errors[YAW];
+
+    // Keep values in acceptable range
+    error_sum[YAW]   = minMax(error_sum[YAW],   -400/Ki[YAW],   400/Ki[YAW]);
+
+    // Calculate error delta : Derivative coefficients
+    delta_err[YAW]   = errors[YAW]   - previous_error[YAW];
+
+    // Save current error as previous_error for next time
+    previous_error[YAW]   = errors[YAW];
+ 
+}
+
+//need to include a part which stores the data in errors from the sensor
+
+        // Reset PID controller's variables to prevent bump start
+       // resetPidController()
+
+
+   //(also need to include a part which accounts for when no instructions are to be given for turning: bascically PID=0 and the RPM stay the same)
+}
+
+void resetPidController() {
+    errors[YAW]   = 0;
+
+    error_sum[YAW]   = 0;
+
+    previous_error[YAW]   = 0;
+}
+
+void calculate_pid_output(X):
+    global Kp, Ki, Kd, errors, error_sum, delta_err
+    
+    # Calculate PID output
+    pid_output = Kp * errors[X] + Ki * error_sum[X] + Kd * delta_err[X]
+    
+    return pid_output
+void Control_Thrusters(RPM)
+    //This function should apply the PID output to the thrusters
+    //For example, if the thrusters are controlled by varying their RPM:
+    int thruster1_rpm = map(THRUSTER_RPM + pid_output-1023, 1023, 0, 255);
+    int thruster2_rpm = map(THRUSTER_RPM - pid_output-1023, 1023, 0, 255);
+    analogWrite(thruster_1_pin, thruster_1_signal);
+    analogWrite(thruster_2_pin, thruster_2_signal);
+}
+/*/float minMax(float value, float min_value, float max_value) {
+    if (value > max_value) {
+        value = max_value;
+    } else if (value < min_value) {
+        value = min_value;
+    }
+   return value;
+}
+instead use a funciton of the format 
+ error_sum_X = std::max(std::min(error_sum_X, 400 / Ki), -400 / Ki);
+
+
+
